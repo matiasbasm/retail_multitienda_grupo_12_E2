@@ -28,20 +28,31 @@ FIN = P["periodo"]["fin"]
 
 # ------------------------------------------------------------------ datos
 @st.cache_resource(show_spinner=False)
-def _correr_cadena_una_vez():
-    """Corre run.py dentro de este proceso (una sola vez aunque haya varios usuarios conectados)."""
+def _candado():
+    import threading
+    return threading.Lock()   # una sola corrida a la vez, aunque haya varias personas con el tablero abierto
+
+
+def correr_cadena(sin_api=False):
+    """Corre run.py dentro de este proceso. Devuelve (código, salida). Código 0 = corrida publicada."""
     import io
     import traceback
     from contextlib import redirect_stdout
 
     import run as cadena_run
     salida = io.StringIO()
-    try:
-        with redirect_stdout(salida):
-            codigo = cadena_run.main([])
-        return codigo, salida.getvalue()
-    except Exception:
-        return 1, salida.getvalue() + "\n" + traceback.format_exc()
+    with _candado():
+        try:
+            with redirect_stdout(salida):
+                codigo = cadena_run.main(["--sin-api"] if sin_api else [])
+            return codigo, salida.getvalue()
+        except Exception:
+            return 1, salida.getvalue() + "\n" + traceback.format_exc()
+
+
+@st.cache_resource(show_spinner=False)
+def _correr_cadena_una_vez():
+    return correr_cadena()
 
 
 def asegurar_datos():
@@ -113,6 +124,15 @@ with st.sidebar:
     tasa = st.slider("Tasa de respuesta esperada", 0.0, 0.5, float(CN["tasa_respuesta"]), 0.01, format="%.2f")
     desc = st.slider("Descuento del cupón", 0.0, 0.5, float(CN["descuento_cupon_pct"]), 0.05, format="%.2f")
     st.caption("Valores iniciales = supuestos del grupo (config/parametros.yaml), a validar con Marketing.")
+    st.divider()
+    st.subheader("Datos")
+    st.caption(f"Última corrida: {pd.Timestamp(ultima['inicio']):%d-%m-%Y %H:%M}  \nPruebas: {int(ultima['pruebas_ok'])}/{int(ultima['pruebas_total'])} OK")
+    sin_api = st.checkbox("Simular caída de la API del IPC", help="Para probar el respaldo: la cadena corre como si la API no respondiera.")
+    if st.button("Actualizar datos (volver a correr la cadena)", type="primary", width="stretch"):
+        with st.spinner("Corriendo la cadena: recepción → bodega → góndola → pruebas…"):
+            codigo, salida = correr_cadena(sin_api)
+        st.session_state["ultima_accion"] = (codigo, salida)
+        st.rerun()
 
 R = RETS[esc]
 r = R.rba(W, FB)
@@ -125,6 +145,17 @@ st.title("¿La cadena retiene a sus clientes o los repone con compradores de una
 st.caption(f"Período: año {P['periodo']['anio']} · clientes identificados con tarjeta · ventana {W} días · base {FB:%d-%m-%Y} → cierre {FIN:%d-%m-%Y} · "
            f"lectura de fechas: {metricas.ESCENARIOS_FECHA[esc].lower()}  \n"
            "**Para:** Gerencia Comercial y Marketing · **Cuándo:** al cierre de cada mes · **Qué decide:** a quién y cuándo contactar para asegurar la segunda compra.")
+if "ultima_accion" in st.session_state:
+    codigo, salida = st.session_state.pop("ultima_accion")
+    if codigo == 0:
+        st.success(f"Cadena actualizada: corrida {ultima['corrida']} publicada a las {pd.Timestamp(ultima['inicio']):%H:%M:%S} "
+                   f"en {ultima['duracion_seg']} s · pruebas {int(ultima['pruebas_ok'])}/{int(ultima['pruebas_total'])} OK.", icon="✅")
+    else:
+        st.error("La corrida no se publicó (una prueba bloqueante falló o hubo un error). El tablero sigue mostrando la última corrida buena.")
+        with st.expander("Ver detalle"):
+            st.code(salida[-4000:], language="text")
+st.caption(f"🔄 **Datos actualizados:** {pd.Timestamp(ultima['inicio']):%d-%m-%Y %H:%M:%S} · corrida {ultima['corrida']} · "
+           f"pruebas de calidad {int(ultima['pruebas_ok'])}/{int(ultima['pruebas_total'])} en verde · IPC: {ultima['fuente_ipc']}")
 if esc != "dia-mes":
     st.warning("Están viendo el escenario alternativo de lectura de fechas (mes-día). El número oficial usa día-mes, decidido con los datos.")
 if ultima["estado_ipc"] != "api":
