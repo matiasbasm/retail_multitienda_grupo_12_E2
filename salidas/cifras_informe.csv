@@ -59,6 +59,10 @@ MARGEN_NO_CAPTURADO,"Margen no capturado por los perdidos (W=90, central)",21256
 VENTAS_COTA_SUP,"Ventas no capturadas, cota superior (W=90)",30914715,$ dic-2025
 MARGEN_COTA_SUP,"Margen no capturado, cota superior (W=90)",9347144,$ dic-2025
 REALIZACION_RETENIDOS,Realización de los retenidos (W=90),48.9,%
+VENTAS_PISO,"Ventas no capturadas, piso (W=90): realización más baja por nivel de compra",2274786,$ dic-2025
+MARGEN_PISO,"Margen no capturado, piso (W=90)",687787,$ dic-2025
+REALIZACION_MINIMA,"Realización más baja entre los retenidos, por nivel de compra antes de la base",33.5,%
+VENTAS_POR_NIVEL,Ventas no capturadas comparando cada perdido con retenidos de su mismo nivel (W=90),7535951,$ dic-2025
 RIESGO_N,Clientes con 30 a 45 días sin comprar al 31-dic,120,clientes
 RIESGO_COSTO,Costo de contactarlos (contacto + cupón a los que vuelven),42662,$
 RIESGO_MARGEN,Margen recuperado esperado,311446,$ dic-2025

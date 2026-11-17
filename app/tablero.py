@@ -255,7 +255,7 @@ k4.metric("Resultado neto", clp(cn["beneficio_neto"]))
 k4.caption(f"Conviene si responde más del {pct(100 * cn['tasa_equilibrio'])} de los contactados" if pd.notna(cn["tasa_equilibrio"]) else "")
 st.caption(f"Lo que costó no retener (W = {W}, base {FB:%d-%m}): los {num(cas['clientes_perdidos'])} perdidos dejaron "
            f"**{mm(cas['margen_no_capturado'])} de margen** sin capturar (ventas {mm(cas['ventas_no_capturadas'])}; "
-           f"cota superior {mm(cas['margen_cota_superior'])} de margen). Pesos de diciembre de 2025.")
+           f"rango de margen: piso {mm(cas['margen_piso'])} – techo {mm(cas['margen_cota_superior'])}). Pesos de diciembre de 2025.")
 
 # ------------------------------------------------------------------ detalle
 st.subheader("Detalle")

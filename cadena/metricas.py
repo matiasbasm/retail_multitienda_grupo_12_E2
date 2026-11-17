@@ -222,7 +222,23 @@ class Retencion:
         realiz = real_ret / proy_ret if proy_ret else np.nan
         contraf = proy_perd * realiz - real_perd
         mp = self.margen_pct()
+        # Piso y control por nivel de compra antes de la base (1, 2, 3 o más boletas)
+        nb = self.ident[self.ident["fecha"] <= fecha_base].groupby("cliente_key").size()
+        nivel = nb.clip(upper=3)
+        gpost = post.groupby("cliente_key")["monto_real_dic"].sum()
+        realiz_n, por_nivel = {}, 0.0
+        for n in (1, 2, 3):
+            rn = [c for c in ret if nivel.get(c) == n]
+            pn = [c for c in perd if nivel.get(c) == n]
+            proy_rn = gp.reindex(rn).fillna(0).sum() / meses_base * meses_resto
+            realiz_n[n] = gpost.reindex(rn).fillna(0).sum() / proy_rn if proy_rn else np.nan
+            proy_pn = gp.reindex(pn).fillna(0).sum() / meses_base * meses_resto
+            por_nivel += proy_pn * realiz_n[n] - gpost.reindex(pn).fillna(0).sum()
+        realiz_min = np.nanmin(list(realiz_n.values()))
+        piso = proy_perd * realiz_min - real_perd
         return {"ventana_dias": W, "clientes_perdidos": len(perd), "proyeccion_cota_superior": proy_perd,
+                "ventas_piso": piso, "margen_piso": piso * mp, "realizacion_minima_pct": round(100 * realiz_min, 1),
+                "ventas_por_nivel": por_nivel,
                 "gasto_real_perdidos_post_base": real_perd, "realizacion_retenidos_pct": round(100 * realiz, 1),
                 "ventas_no_capturadas": contraf, "margen_no_capturado": contraf * mp, "margen_cota_superior": proy_perd * mp,
                 "margen_pct": mp}
