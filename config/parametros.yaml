@@ -1,0 +1,53 @@
+# =====================================================================
+# Parámetros de la cadena. TODA decisión del grupo vive aquí.
+# Cambiar un valor y volver a correr `python run.py` recalcula todo:
+# la base de datos, las cifras del informe y el tablero.
+# =====================================================================
+
+periodo:
+  anio: 2025                  # el caso analiza el año 2025
+
+metrica:
+  # Cliente activo en la fecha d con ventana W: al menos una boleta válida en (d - W, d]
+  ventana_principal: 90       # días (cubre el 93,6% de los intervalos entre compras)
+  ventana_alternativa: 30     # días (creencia verbalizada por la gerencia)
+  ventanas_tablero: [30, 90, 180]      # las que puede elegir la gerencia en pantalla
+  ventanas_sensibilidad: [30, 45, 60, 75, 90]
+  ventanas_extra: [180, 365]
+  horizontes_recompra: [30, 90, 180]   # días de exposición para "nuevos que no vuelven"
+  # Fecha base: primer cierre de mes con `ventana_principal` días de historia (31-mar)
+  # Fecha base común para comparar 30/90/180 con la misma base: primer cierre con 180 días (30-jun)
+  z_95: 1.96
+  min_clientes_corte: 30      # bajo este tamaño, un corte (formato, segmento) se marca "muestra chica"
+
+# Caso de negocio: contactar a los clientes que llevan entre X e Y días sin comprar.
+# Valores propuestos por el grupo; se pueden mover en el tablero.
+caso_negocio:
+  dias_sin_compra_desde: 30
+  dias_sin_compra_hasta: 45
+  costo_contacto_clp: 150          # costo por cliente contactado (SMS/correo + gestión). Supuesto a validar.
+  descuento_cupon_pct: 0.10        # descuento del cupón sobre la compra de regreso. Supuesto a validar.
+  tasa_respuesta: 0.15             # % de contactados que vuelven por el cupón. Supuesto a validar.
+  horizonte_valor_dias: 90         # margen que deja un cliente recuperado en este plazo
+
+# Acuerdo de servicio (SLA) de la tabla de hechos fact_venta
+sla:
+  dueno: "Gerente Comercial"
+  frescura_dias: 31                 # se actualiza al menos una vez al mes (cierre mensual)
+  completitud_min_pct: 85.0         # % mínimo de boletas originales que llegan a la métrica
+  calidad_min_pct: 100.0            # % de pruebas BLOQUEANTES en verde (las de aviso se informan)
+
+fuentes:
+  pos: data/fuentes/origen_pos.sqlite
+  maestro: data/fuentes/origen_maestro_productos.csv
+  promociones: data/fuentes/origen_promociones.json
+  ipc_url: "https://mindicador.cl/api/ipc/{anio}"
+  ipc_respaldo_api: data/fuentes/ipc_{anio}_respaldo_api.json
+  ipc_respaldo_manual: data/fuentes/ipc_{anio}_respaldo_manual.json
+  ipc_timeout_seg: 20
+
+rutas:
+  recepcion: data/recepcion          # paso 1: copia exacta de lo que llegó
+  almacen: data/almacen.duckdb       # pasos 2 y 3 + operación (una sola base DuckDB)
+  salidas: salidas                   # cifras del informe, calidad, registro de limpieza
+  log: salidas/cadena.log

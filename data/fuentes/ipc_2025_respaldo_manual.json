@@ -1,0 +1,57 @@
+{
+ "version": "respaldo manual",
+ "autor": "Copia manual en formato de la API de mindicador.cl. Valores: variación mensual del IPC 2025 publicada por el INE (tabla del SII). Se usa solo si la API no responde y no existe ipc_2025_respaldo_api.json.",
+ "codigo": "ipc",
+ "nombre": "Indice de Precios al Consumidor (IPC)",
+ "unidad_medida": "Porcentaje",
+ "serie": [
+  {
+   "fecha": "2025-12-01T03:00:00.000Z",
+   "valor": -0.2
+  },
+  {
+   "fecha": "2025-11-01T03:00:00.000Z",
+   "valor": 0.3
+  },
+  {
+   "fecha": "2025-10-01T03:00:00.000Z",
+   "valor": 0.0
+  },
+  {
+   "fecha": "2025-09-01T03:00:00.000Z",
+   "valor": 0.4
+  },
+  {
+   "fecha": "2025-08-01T04:00:00.000Z",
+   "valor": 0.0
+  },
+  {
+   "fecha": "2025-07-01T04:00:00.000Z",
+   "valor": 0.9
+  },
+  {
+   "fecha": "2025-06-01T04:00:00.000Z",
+   "valor": -0.4
+  },
+  {
+   "fecha": "2025-05-01T04:00:00.000Z",
+   "valor": 0.2
+  },
+  {
+   "fecha": "2025-04-01T03:00:00.000Z",
+   "valor": 0.2
+  },
+  {
+   "fecha": "2025-03-01T03:00:00.000Z",
+   "valor": 0.5
+  },
+  {
+   "fecha": "2025-02-01T03:00:00.000Z",
+   "valor": 0.4
+  },
+  {
+   "fecha": "2025-01-01T03:00:00.000Z",
+   "valor": 1.1
+  }
+ ]
+}

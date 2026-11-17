@@ -1,0 +1,69 @@
+﻿etiqueta,descripcion,valor,unidad
+BOLETAS_ORIG,Boletas originales,6321,boletas
+BOLETAS_VALIDAS,Boletas válidas del período,6222,boletas
+BOLETAS_METRICA,Boletas usadas en la métrica (identificadas),5414,boletas
+LINEAS_FACT,Filas de fact_venta (líneas de boleta válidas),14471,líneas
+PCT_EXCLUIDAS,% de boletas originales excluidas de la métrica,14.3,%
+PCT_ANONIMAS_VALIDAS,% de boletas válidas anónimas,13.0,%
+PCT_VENTAS_IDENT,% de ventas válidas de clientes identificados,93.5,%
+N_PROBLEMAS,Problemas de calidad detectados,29,problemas
+FUENTE_IPC,Fuente del IPC usada en esta corrida,API mindicador.cl,
+INFLACION,Inflación acumulada 2025,3.44,%
+IMPACTO_MONTO,Cambio en ventas si se usara monto_linea original,0.82,%
+IMPACTO_ATIPICA,Cambio en ventas si las cantidades atípicas se dividieran por 10,-2.56,%
+PCT_FECHAS_SUPUESTO,% de boletas con fecha que depende del supuesto día-mes,19.7,%
+MEDIANA_DIAS,Mediana de días entre compras,14.0,días
+PCT_RECOMPRA_30,% de recompras dentro de 30 días,70.1,%
+PCT_RECOMPRA_90,% de recompras dentro de 90 días,93.6,%
+PCT_VUELVE_90,% de clientes que vuelve dentro de 90 días tras su primera compra,63.8,%
+PCT_VUELVE_30,% de clientes que vuelve dentro de 30 días tras su primera compra,44.1,%
+FECHA_BASE,Fecha base de la métrica principal,31-03-2025,
+RBA_90,"RBA con W = 90 (principal), base 31-03",36.2,%
+RBA_30,"RBA con W = 30 (alternativa), base 31-03",14.3,%
+BASE_90,Base activa al 31-03 con W = 90,417,clientes
+RETENIDOS_90,Retenidos al cierre con W = 90,151,clientes
+PERDIDOS_90,Perdidos al cierre con W = 90,266,clientes
+ACTIVOS_CIERRE_90,Clientes activos al 31-dic con W = 90,652,clientes
+NUEVOS_CIERRE_90,Nuevos activos al cierre con W = 90,455,clientes
+PCT_CIERRE_NUEVOS_90,% de la base al cierre que es nueva (W = 90),69.8,%
+REPOSICION_90,Índice de reposición W = 90,1.71,nuevos por perdido
+REPOSICION_30,Índice de reposición W = 30,1.25,nuevos por perdido
+REPOSICION_ALT_NUEVO,Índice de reposición W = 90 con 'nuevo' = primera compra observada,1.88,nuevos por perdido
+MATRIZ_B90_C30,Base W=90 medida con W=30 al cierre,12.9,%
+MATRIZ_B30_C90,Base W=30 medida con W=90 al cierre,36.5,%
+RBA_90_RANGO_FB,RBA W=90: rango según la fecha base,36.2 – 75.4,%
+FECHA_BASE_COMUN,Fecha base común para comparar 30/90/180 días,30-06-2025,
+RBA_30_BASE_COMUN,"RBA con W = 30, misma fecha base 30-06",18.2,%
+REPOSICION_30_BASE_COMUN,"Índice de reposición con W = 30, misma fecha base 30-06",1.0,nuevos por perdido
+RBA_90_BASE_COMUN,"RBA con W = 90, misma fecha base 30-06",42.6,%
+REPOSICION_90_BASE_COMUN,"Índice de reposición con W = 90, misma fecha base 30-06",1.18,nuevos por perdido
+RBA_180_BASE_COMUN,"RBA con W = 180, misma fecha base 30-06",61.0,%
+REPOSICION_180_BASE_COMUN,"Índice de reposición con W = 180, misma fecha base 30-06",1.58,nuevos por perdido
+NNV_90,% de nuevos que no vuelven en 90 días (con control de exposición),34.8,%
+NNV_90_IC95,IC95 del NNV_90,30.9 – 38.8,%
+NNV_90_N,Nuevos elegibles para NNV_90,552,clientes
+NNV_180,% de nuevos que no vuelven en 180 días,24.5,%
+NNV_90_ANTIGUOS,% de antiguos que no vuelven en 90 días,38.4,%
+NNV_90_ALT_NUEVO,NNV_90 con definición alternativa de nuevo,36.2,%
+NNV_SIN_CONTROL,"% de nuevos sin segunda compra en el año (sin control, sesgado)",40.2,%
+RET_TRIM,Retención trimestral T1→T2 / T2→T3 / T3→T4,66.4 / 61.4 / 51.9,%
+RET_TRIM_ULTIMA,Retención trimestral T3→T4,51.9,%
+CLIENTES_T1_T4,Clientes que compran en T1 / T4,417 / 658,clientes
+GASTO_CLIENTE_T1_T4,Gasto real por cliente T1 / T4,42688 / 34982,$ dic-2025
+RBA_FORMATO_RANGO,RBA W=90 por formato: mínimo – máximo,35.4 – 36.8,%
+PCT_ANONIMAS_ORIG,% de boletas originales excluidas por anónimas,12.8,%
+TICKET_ANON_REL,Ticket anónimo / identificado,46,%
+MARGEN_PCT,Margen bruto promedio,30.2,%
+VENTAS_NO_CAPTURADAS,"Ventas no capturadas por los perdidos (W=90, central)",7030418,$ dic-2025
+MARGEN_NO_CAPTURADO,"Margen no capturado por los perdidos (W=90, central)",2125665,$ dic-2025
+VENTAS_COTA_SUP,"Ventas no capturadas, cota superior (W=90)",30914715,$ dic-2025
+MARGEN_COTA_SUP,"Margen no capturado, cota superior (W=90)",9347144,$ dic-2025
+REALIZACION_RETENIDOS,Realización de los retenidos (W=90),48.9,%
+RIESGO_N,Clientes con 30 a 45 días sin comprar al 31-dic,120,clientes
+RIESGO_COSTO,Costo de contactarlos (contacto + cupón a los que vuelven),42662,$
+RIESGO_MARGEN,Margen recuperado esperado,311446,$ dic-2025
+RIESGO_NETO,Beneficio neto esperado del contacto,268784,$ dic-2025
+RIESGO_TASA_EQUILIBRIO,Tasa de respuesta mínima para no perder plata,0.9,%
+RBA_90_MESDIA,RBA W=90 si las fechas ambiguas fueran mes-día,55.5,%
+REPOSICION_90_MESDIA,Índice de reposición W=90 si las fechas fueran mes-día,1.64,nuevos por perdido
+NNV_90_MESDIA,NNV_90 si las fechas fueran mes-día,49.8,%

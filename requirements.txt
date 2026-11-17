@@ -1,0 +1,8 @@
+# Python 3.10 o superior (probado con 3.11)
+pandas==3.1.1
+numpy==2.4.6
+duckdb==2.0.0
+pyyaml==6.0.3
+requests==2.34.2
+streamlit==1.67.0
+altair==6.3.0

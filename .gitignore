@@ -1,0 +1,14 @@
+# Ambiente
+.venv/
+__pycache__/
+*.pyc
+# Generado por la cadena en cada corrida (se recrea con `python run.py`)
+data/recepcion/
+data/*.duckdb
+data/*.duckdb.wal
+salidas/calidad/
+salidas/tablas/
+salidas/cadena.log
+salidas/resultados_pruebas.csv
+# El archivo de cifras SÍ se versiona (salidas/cifras_informe.csv) para que el informe tenga su fuente en el repo
+.DS_Store
