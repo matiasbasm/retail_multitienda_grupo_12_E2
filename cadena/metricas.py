@@ -156,6 +156,16 @@ class Retencion:
         return {"H_dias": H, "grupo": grupo, "elegibles": n, "no_vuelven": k, "pct_no_vuelve": round(p_, 1),
                 "IC95_inf": round(lo, 1), "IC95_sup": round(hi, 1)}
 
+    def valor_segunda_compra(self, H_vuelve, H_valor):
+        """Gasto real en los primeros H_valor días de un nuevo que vuelve dentro de H_vuelve días, frente a uno que no vuelve."""
+        dias, expo = self._segunda()
+        es_nuevo = self.inicio.reindex(self.primera.index) >= self.m.ini
+        x = self.ident.assign(f0=self.ident["cliente_key"].map(self.primera))
+        gasto = x[x["fecha"] <= x["f0"] + pd.Timedelta(days=H_valor)].groupby("cliente_key")["monto_real_dic"].sum()
+        eleg = es_nuevo & (expo >= H_valor)
+        volvio = dias <= H_vuelve
+        return float(gasto[eleg & volvio].mean()), float(gasto[eleg & ~volvio].mean())
+
     def nnv_sin_control(self):
         dias, _ = self._segunda()
         es_nuevo = self.inicio.reindex(self.primera.index) >= self.m.ini

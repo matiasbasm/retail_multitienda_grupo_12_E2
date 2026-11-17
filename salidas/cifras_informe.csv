@@ -45,6 +45,8 @@ NNV_90_N,Nuevos elegibles para NNV_90,552,clientes
 NNV_180,% de nuevos que no vuelven en 180 días,24.5,%
 NNV_90_ANTIGUOS,% de antiguos que no vuelven en 90 días,38.4,%
 NNV_90_ALT_NUEVO,NNV_90 con definición alternativa de nuevo,36.2,%
+GASTO_NUEVO_VUELVE,Gasto real en sus primeros 180 días de un nuevo que vuelve dentro de 90 días,87887,$ dic-2025
+GASTO_NUEVO_NO_VUELVE,Gasto real en sus primeros 180 días de un nuevo que no vuelve,10386,$ dic-2025
 NNV_SIN_CONTROL,"% de nuevos sin segunda compra en el año (sin control, sesgado)",40.2,%
 RET_TRIM,Retención trimestral T1→T2 / T2→T3 / T3→T4,66.4 / 61.4 / 51.9,%
 RET_TRIM_ULTIMA,Retención trimestral T3→T4,51.9,%
