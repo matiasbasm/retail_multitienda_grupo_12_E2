@@ -1,5 +1,6 @@
 """Lectura de config/parametros.yaml y utilidades comunes (rutas, log)."""
 import logging
+import tempfile
 import os
 from pathlib import Path
 
@@ -22,7 +23,23 @@ def cargar_parametros(ruta=None):
     p["periodo"]["inicio"], p["periodo"]["fin"] = ini, fin
     p["metrica"]["fecha_base"] = primera_fecha_base(ini, p["metrica"]["ventana_principal"])
     p["metrica"]["fecha_base_comun"] = primera_fecha_base(ini, max(p["metrica"]["ventanas_tablero"]))
+    # Lo que genera la cadena va al repositorio; si no se puede escribir ahí (algunos servidores en la nube),
+    # va a una carpeta temporal. Las fuentes siempre se leen del repositorio.
+    if not _escribible(RAIZ):
+        base = Path(tempfile.gettempdir()) / "tin_multitienda"
+        for k in ("recepcion", "almacen", "salidas", "log"):
+            p["rutas"][k] = str(base / p["rutas"][k])
     return p
+
+
+def _escribible(carpeta):
+    try:
+        prueba = Path(carpeta) / ".prueba_escritura"
+        prueba.write_text("ok")
+        prueba.unlink()
+        return True
+    except OSError:
+        return False
 
 
 def primera_fecha_base(inicio, W):

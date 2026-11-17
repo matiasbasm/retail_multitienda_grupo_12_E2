@@ -6,7 +6,6 @@ así que muestra los mismos números que el informe y se actualiza cada vez que 
 
 Abrir:  streamlit run app/tablero.py
 """
-import subprocess
 import sys
 from pathlib import Path
 
@@ -28,11 +27,36 @@ FIN = P["periodo"]["fin"]
 
 
 # ------------------------------------------------------------------ datos
+@st.cache_resource(show_spinner=False)
+def _correr_cadena_una_vez():
+    """Corre run.py dentro de este proceso (una sola vez aunque haya varios usuarios conectados)."""
+    import io
+    import traceback
+    from contextlib import redirect_stdout
+
+    import run as cadena_run
+    salida = io.StringIO()
+    try:
+        with redirect_stdout(salida):
+            codigo = cadena_run.main([])
+        return codigo, salida.getvalue()
+    except Exception:
+        return 1, salida.getvalue() + "\n" + traceback.format_exc()
+
+
 def asegurar_datos():
     """En un ambiente nuevo (por ejemplo, Streamlit Cloud) no hay base todavía: se corre la cadena una vez."""
-    if not ruta(P["rutas"]["almacen"]).exists():
-        with st.spinner("Primera apertura: corriendo la cadena de datos (≈10 segundos)…"):
-            subprocess.run([sys.executable, str(RAIZ / "run.py")], cwd=RAIZ, check=True)
+    if ruta(P["rutas"]["almacen"]).exists():
+        return
+    with st.spinner("Primera apertura: corriendo la cadena de datos (≈20 segundos)…"):
+        codigo, salida = _correr_cadena_una_vez()
+    if codigo != 0 or not ruta(P["rutas"]["almacen"]).exists():
+        st.error("La cadena de datos no terminó bien, así que no hay una corrida que mostrar. Detalle:")
+        log = ruta(P["rutas"]["log"])
+        texto = log.read_text(encoding="utf-8")[-6000:] if log.exists() else ""
+        st.code((salida[-4000:] + "\n--- log ---\n" + texto).strip() or "sin salida", language="text")
+        _correr_cadena_una_vez.clear()
+        st.stop()
 
 
 @st.cache_resource(show_spinner=False)

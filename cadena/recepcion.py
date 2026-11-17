@@ -55,10 +55,13 @@ def obtener_ipc(p, log, simular_caida=False):
         validar_serie_ipc(data, anio)
         anterior = json.load(open(r_api, encoding="utf-8"))["respuesta"] if r_api.exists() else None
         if anterior is None or anterior.get("serie") != data.get("serie"):
-            with open(r_api, "w", encoding="utf-8") as fh:
-                json.dump({"url": url, "consultado_en": datetime.now().isoformat(timespec="seconds"), "respuesta": data},
-                          fh, ensure_ascii=False, indent=1)
-            log.info("IPC: la serie de la API cambió; se actualizó el respaldo de la API")
+            try:
+                with open(r_api, "w", encoding="utf-8") as fh:
+                    json.dump({"url": url, "consultado_en": datetime.now().isoformat(timespec="seconds"), "respuesta": data},
+                              fh, ensure_ascii=False, indent=1)
+                log.info("IPC: la serie de la API cambió; se actualizó el respaldo de la API")
+            except OSError as e:
+                log.warning(f"IPC: no se pudo guardar el respaldo nuevo de la API ({e}); se sigue con la respuesta recibida")
         return data, "API mindicador.cl", "api"
     except Exception as e:
         log.warning(f"IPC: la API no respondió o devolvió datos inválidos ({e}); se usa un respaldo")
