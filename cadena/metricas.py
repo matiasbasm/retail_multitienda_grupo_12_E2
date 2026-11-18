@@ -271,17 +271,46 @@ class Retencion:
         gasto = y[(y["fecha"] >= y["f2"]) & (y["fecha"] < y["f2"] + pd.Timedelta(days=H))].groupby("cliente_key")["monto_real_dic"].sum()
         return float(gasto.mean() * mp), int(len(gasto))
 
+    def vuelven_solos(self, desde, hasta, H):
+        """% de los clientes que, en un cierre de mes, llevaban entre `desde` y `hasta` días sin comprar y que volvieron a
+        comprar SIN contacto dentro de los H días siguientes. Junta todos los cierres del período con H días observables después.
+        Es la línea base del caso de negocio: a estos clientes el cupón no los trae, pero igual lo usan."""
+        x = self._fechas
+        casos = vuelven = 0
+        for c in pd.date_range(self.m.ini, self.m.fin, freq="ME"):
+            if c + pd.Timedelta(days=H) > self.m.fin:
+                break
+            grupo = self.en_riesgo(c, desde, hasta)
+            if not grupo:
+                continue
+            futuro = x[(x["fecha"] > c) & (x["fecha"] <= c + pd.Timedelta(days=H))]
+            casos += len(grupo)
+            vuelven += len(grupo & set(futuro["cliente_key"]))
+        return (vuelven / casos if casos else np.nan), casos
 
-def contacto_en_riesgo(ret: Retencion, fecha, desde, hasta, costo_contacto, descuento, tasa_respuesta, horizonte):
-    """Caso de negocio de la recomendación: contactar a quienes llevan entre `desde` y `hasta` días sin comprar."""
+
+def contacto_en_riesgo(ret: Retencion, fecha, desde, hasta, costo_contacto, descuento, tasa_respuesta, horizonte, vigencia_cupon=30):
+    """Caso de negocio de la recomendación: contactar a quienes llevan entre `desde` y `hasta` días sin comprar.
+
+    `tasa_respuesta` es ADICIONAL: % de contactados que vuelve por el cupón, por encima de los que habrían vuelto solos.
+    El margen se cuenta solo para esos clientes adicionales. El descuento, en cambio, lo usan todos los que vuelven dentro
+    de la vigencia del cupón, incluidos los que habrían vuelto igual (medidos en los datos con `vuelven_solos`)."""
     clientes = ret.en_riesgo(fecha, desde, hasta)
     n = len(clientes)
     margen_cliente, n_ref = ret.valor_recuperado(horizonte)
-    recuperados = n * tasa_respuesta
+    p_solos, casos_solos = ret.vuelven_solos(desde, hasta, vigencia_cupon)
+    p_solos = 0.0 if pd.isna(p_solos) else p_solos
+    recuperados = n * tasa_respuesta                 # vuelven por el cupón
+    canjes_sin_efecto = n * p_solos                  # habrían vuelto igual, pero usan el cupón
     ticket = ret.ident["monto_real_dic"].mean()
-    costo = n * costo_contacto + recuperados * ticket * descuento
+    costo_contactos = n * costo_contacto
+    costo_cupones = (recuperados + canjes_sin_efecto) * ticket * descuento
+    costo = costo_contactos + costo_cupones
     margen = recuperados * margen_cliente
+    neto_por_adicional = margen_cliente - ticket * descuento
     return {"clientes_en_riesgo": n, "recuperados_esperados": recuperados, "costo_total": costo, "margen_recuperado": margen,
             "beneficio_neto": margen - costo, "margen_por_cliente_recuperado": margen_cliente, "ticket_promedio": ticket,
-            "clientes_referencia": n_ref, "tasa_equilibrio": (n * costo_contacto) / (n * (margen_cliente - ticket * descuento))
-            if n and margen_cliente > ticket * descuento else np.nan}
+            "clientes_referencia": n_ref, "vuelven_solos_pct": p_solos, "casos_referencia_solos": casos_solos,
+            "canjes_sin_efecto": canjes_sin_efecto, "costo_contactos": costo_contactos, "costo_cupones": costo_cupones,
+            "tasa_equilibrio": (costo_contactos + canjes_sin_efecto * ticket * descuento) / (n * neto_por_adicional)
+            if n and neto_por_adicional > 0 else np.nan}

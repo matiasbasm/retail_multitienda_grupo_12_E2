@@ -121,8 +121,11 @@ with st.sidebar:
     st.subheader("Caso: contactar clientes en riesgo")
     rango = st.slider("Días sin comprar", 15, 120, (CN["dias_sin_compra_desde"], CN["dias_sin_compra_hasta"]))
     costo_c = st.number_input("Costo por cliente contactado ($)", 0, 5000, CN["costo_contacto_clp"], 50)
-    tasa = st.slider("Tasa de respuesta esperada", 0.0, 0.5, float(CN["tasa_respuesta"]), 0.01, format="%.2f")
+    tasa = st.slider("Respuesta adicional por el cupón", 0.0, 0.5, float(CN["tasa_respuesta"]), 0.01, format="%.2f",
+                     help="% de contactados que vuelve gracias al cupón, por encima de los que habrían vuelto solos.")
     desc = st.slider("Descuento del cupón", 0.0, 0.5, float(CN["descuento_cupon_pct"]), 0.05, format="%.2f")
+    vigencia = st.slider("Vigencia del cupón (días)", 7, 90, int(CN.get("vigencia_cupon_dias", 30)), 1,
+                         help="Los clientes que vuelven solos dentro de este plazo igual usan el cupón: es costo sin efecto.")
     st.caption("Valores iniciales = supuestos del grupo (config/parametros.yaml), a validar con Marketing.")
     st.divider()
     st.subheader("Datos")
@@ -217,14 +220,30 @@ for w in MT["ventanas_tablero"]:
     x = R.rba(w, base_c)
     filas.append({"Ventana": f"{w} días", "Base activa": x["base_activa"], "Retenidos": x["retenidos"], "Retención (RBA)": x["RBA_pct"],
                   "Nuevos activos al cierre": x["nuevos_activos_cierre"], "Perdidos": x["perdidos"], "Índice de reposición": x["indice_reposicion"],
+                  "Cierre: % retenidos": x["pct_cierre_retenidos"], "Cierre: % nuevos": x["pct_cierre_nuevos"],
                   "Conclusión": "repone más de lo que pierde" if x["indice_reposicion"] > 1.05 else
                   ("repone lo mismo que pierde" if x["indice_reposicion"] >= 0.95 else "pierde más de lo que repone")})
 tv = pd.DataFrame(filas)
 st.dataframe(tv, hide_index=True, width="stretch",
              column_config={"Retención (RBA)": st.column_config.NumberColumn(format="%.1f%%"),
-                            "Índice de reposición": st.column_config.NumberColumn(format="%.2f")})
-st.caption(f"Con la misma base ({base_c:%d-%m-%Y}), una ventana más larga retiene más porque exige menos para \"seguir activo\". "
-           "La lectura de negocio no cambia: la mayoría de la base al cierre es nueva y 1 de cada 3 nuevos no vuelve.")
+                            "Índice de reposición": st.column_config.NumberColumn(format="%.2f"),
+                            "Cierre: % retenidos": st.column_config.NumberColumn(format="%.1f%%"),
+                            "Cierre: % nuevos": st.column_config.NumberColumn(format="%.1f%%")})
+# La lectura se arma con los números de la tabla, para que siga siendo cierta con cualquier fecha base o corrida
+rep_min, rep_max = tv["Índice de reposición"].min(), tv["Índice de reposición"].max()
+lectura = [f"Con la misma base ({base_c:%d-%m-%Y}), una ventana más larga retiene más porque exige menos para \"seguir activo\"."]
+if rep_min >= 0.95:
+    lectura.append(f"Con cualquiera de las tres, la cadena repone al menos lo que pierde (reposición de {num(rep_min, 2)} a {num(rep_max, 2)}).")
+else:
+    lectura.append("Con alguna de las ventanas la cadena pierde más clientes de los que repone: ver la columna Conclusión.")
+parejas = tv[tv["Cierre: % nuevos"] <= tv["Cierre: % retenidos"] + 5]
+if parejas.empty:
+    lectura.append("Con las tres, al cierre hay más clientes nuevos que retenidos.")
+else:
+    detalle = "; ".join(f"{f['Ventana']}: {pct(f['Cierre: % retenidos'])} retenidos y {pct(f['Cierre: % nuevos'])} nuevos" for _, f in parejas.iterrows())
+    lectura.append(f"Con ventanas largas la base al cierre queda pareja entre retenidos y nuevos ({detalle}): "
+                   + ("la conclusión se suaviza, pero no se invierte." if rep_min >= 0.95 else "revisar la conclusión."))
+st.caption(" ".join(lectura))
 
 # ------------------------------------------------------------------ corte por la dimensión principal
 st.subheader("Por formato de local: las diferencias caben en el margen de error (sin ranking)")
@@ -244,15 +263,19 @@ st.caption(f"Línea punteada: total cadena ({pct(r['RBA_pct'])}). Formato = dond
 
 # ------------------------------------------------------------------ caso de negocio
 st.subheader("¿Cuánto cuesta contactar a los que se están yendo y cuánto se recupera?")
-cn = metricas.contacto_en_riesgo(R, FIN, rango[0], rango[1], costo_c, desc, tasa, CN["horizonte_valor_dias"])
+cn = metricas.contacto_en_riesgo(R, FIN, rango[0], rango[1], costo_c, desc, tasa, CN["horizonte_valor_dias"], vigencia)
 cas = R.caso_negocio(W, FB)
 k1, k2, k3, k4 = st.columns(4)
 k1.metric(f"Clientes con {rango[0]}–{rango[1]} días sin comprar", num(cn["clientes_en_riesgo"]))
-k2.metric("Costo de la acción", clp(cn["costo_total"]), help="Contacto a todos + descuento del cupón a los que vuelven.")
+k2.metric("Costo de la acción", clp(cn["costo_total"]),
+          help="Contacto a todos + descuento del cupón a todos los que vuelven dentro de su vigencia, incluidos los que habrían vuelto solos.")
 k3.metric(f"Margen recuperado ({CN['horizonte_valor_dias']} días)", clp(cn["margen_recuperado"]),
-          help=f"Recuperados esperados × margen promedio que deja un cliente en {CN['horizonte_valor_dias']} días tras volver a comprar.")
+          help=f"Solo los clientes que vuelven por el cupón × margen promedio que deja un cliente en {CN['horizonte_valor_dias']} días tras volver a comprar.")
 k4.metric("Resultado neto", clp(cn["beneficio_neto"]))
-k4.caption(f"Conviene si responde más del {pct(100 * cn['tasa_equilibrio'])} de los contactados" if pd.notna(cn["tasa_equilibrio"]) else "")
+k4.caption(f"Conviene si el cupón trae más del {pct(100 * cn['tasa_equilibrio'])} adicional de los contactados" if pd.notna(cn["tasa_equilibrio"]) else "")
+st.caption(f"Sin contacto, el {pct(100 * cn['vuelven_solos_pct'])} de estos clientes vuelve solo dentro de {vigencia} días "
+           f"(medido en {num(cn['casos_referencia_solos'])} casos de los cierres de 2025). A ellos el cupón no los trae, pero igual lo usan: "
+           f"ese descuento está en el costo y su margen no se cuenta como recuperado.")
 st.caption(f"Lo que costó no retener (W = {W}, base {FB:%d-%m}): los {num(cas['clientes_perdidos'])} perdidos dejaron "
            f"**{mm(cas['margen_no_capturado'])} de margen** sin capturar (ventas {mm(cas['ventas_no_capturadas'])}; "
            f"rango de margen: piso {mm(cas['margen_piso'])} – techo {mm(cas['margen_cota_superior'])}). Pesos de diciembre de 2025.")

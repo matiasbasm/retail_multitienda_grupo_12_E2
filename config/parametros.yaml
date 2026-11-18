@@ -27,7 +27,8 @@ caso_negocio:
   dias_sin_compra_hasta: 45
   costo_contacto_clp: 150          # costo por cliente contactado (SMS/correo + gestión). Supuesto a validar.
   descuento_cupon_pct: 0.10        # descuento del cupón sobre la compra de regreso. Supuesto a validar.
-  tasa_respuesta: 0.15             # % de contactados que vuelven por el cupón. Supuesto a validar.
+  tasa_respuesta: 0.15             # % ADICIONAL de contactados que vuelve por el cupón, por encima de los que vuelven solos. Supuesto a validar.
+  vigencia_cupon_dias: 30          # días que dura el cupón. Los que vuelven solos en este plazo (medido en los datos) igual lo usan: es costo sin efecto.
   horizonte_valor_dias: 90         # margen que deja un cliente recuperado en este plazo
 
 # Acuerdo de servicio (SLA) de la tabla de hechos fact_venta

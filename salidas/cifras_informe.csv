@@ -7,7 +7,7 @@ PCT_EXCLUIDAS,% de boletas originales excluidas de la métrica,14.3,%
 PCT_ANONIMAS_VALIDAS,% de boletas válidas anónimas,13.0,%
 PCT_VENTAS_IDENT,% de ventas válidas de clientes identificados,93.5,%
 N_PROBLEMAS,Problemas de calidad detectados,29,problemas
-FUENTE_IPC,Fuente del IPC usada en esta corrida,API mindicador.cl,
+FUENTE_IPC,Fuente del IPC usada en esta corrida,respaldo de la API (2026-10-14),
 INFLACION,Inflación acumulada 2025,3.44,%
 IMPACTO_MONTO,Cambio en ventas si se usara monto_linea original,0.82,%
 IMPACTO_ATIPICA,Cambio en ventas si las cantidades atípicas se dividieran por 10,-2.56,%
@@ -66,10 +66,13 @@ MARGEN_PISO,"Margen no capturado, piso (W=90)",687787,$ dic-2025
 REALIZACION_MINIMA,"Realización más baja entre los retenidos, por nivel de compra antes de la base",33.5,%
 VENTAS_POR_NIVEL,Ventas no capturadas comparando cada perdido con retenidos de su mismo nivel (W=90),7535951,$ dic-2025
 RIESGO_N,Clientes con 30 a 45 días sin comprar al 31-dic,120,clientes
-RIESGO_COSTO,Costo de contactarlos (contacto + cupón a los que vuelven),42662,$
-RIESGO_MARGEN,Margen recuperado esperado,311446,$ dic-2025
-RIESGO_NETO,Beneficio neto esperado del contacto,268784,$ dic-2025
-RIESGO_TASA_EQUILIBRIO,Tasa de respuesta mínima para no perder plata,0.9,%
+RIESGO_COSTO,"Costo de contactarlos (contacto + cupón a todos los que vuelven, incluidos los que habrían vuelto solos)",92782,$
+RIESGO_COSTO_CUPONES_SOLOS,Parte del costo que va a cupones de clientes que habrían vuelto solos,50120,$
+RIESGO_VUELVEN_SOLOS,% de clientes con 30 a 45 días sin comprar que vuelve sin contacto en 30 días (cierres de 2025),30.5,%
+RIESGO_VUELVEN_SOLOS_N,Casos cliente-cierre usados para medir los que vuelven solos,889,casos
+RIESGO_MARGEN,Margen recuperado esperado (solo clientes que vuelven por el cupón),311446,$ dic-2025
+RIESGO_NETO,Beneficio neto esperado del contacto,218664,$ dic-2025
+RIESGO_TASA_EQUILIBRIO,Respuesta adicional mínima al cupón para no perder plata,3.6,%
 RBA_90_MESDIA,RBA W=90 si las fechas ambiguas fueran mes-día,55.5,%
 REPOSICION_90_MESDIA,Índice de reposición W=90 si las fechas fueran mes-día,1.64,nuevos por perdido
 NNV_90_MESDIA,NNV_90 si las fechas fueran mes-día,49.8,%

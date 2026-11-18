@@ -48,7 +48,8 @@ def calcular(m, p, extra, log, carpeta):
     caso = r.caso_negocio(W, FB)
     pd.DataFrame([caso, r.caso_negocio(Wa, FB)]).to_csv(f"{carpeta}/caso_negocio.csv", index=False)
     contacto = contacto_en_riesgo(r, fin, cn["dias_sin_compra_desde"], cn["dias_sin_compra_hasta"], cn["costo_contacto_clp"],
-                                  cn["descuento_cupon_pct"], cn["tasa_respuesta"], cn["horizonte_valor_dias"])
+                                  cn["descuento_cupon_pct"], cn["tasa_respuesta"], cn["horizonte_valor_dias"],
+                                  cn.get("vigencia_cupon_dias", 30))
 
     # Escenario de lectura de fechas mes-día (alternativa a validar con la gerencia)
     r_md = Retencion(m, "mes-dia", mt["z_95"])
@@ -144,10 +145,13 @@ def calcular(m, p, extra, log, carpeta):
     cifra("REALIZACION_MINIMA", "Realización más baja entre los retenidos, por nivel de compra antes de la base", caso["realizacion_minima_pct"], "%")
     cifra("VENTAS_POR_NIVEL", f"Ventas no capturadas comparando cada perdido con retenidos de su mismo nivel (W={W})", round(caso["ventas_por_nivel"]), "$ dic-2025")
     cifra("RIESGO_N", f"Clientes con {cn['dias_sin_compra_desde']} a {cn['dias_sin_compra_hasta']} días sin comprar al 31-dic", contacto["clientes_en_riesgo"], "clientes")
-    cifra("RIESGO_COSTO", "Costo de contactarlos (contacto + cupón a los que vuelven)", round(contacto["costo_total"]), "$")
-    cifra("RIESGO_MARGEN", "Margen recuperado esperado", round(contacto["margen_recuperado"]), "$ dic-2025")
+    cifra("RIESGO_COSTO", "Costo de contactarlos (contacto + cupón a todos los que vuelven, incluidos los que habrían vuelto solos)", round(contacto["costo_total"]), "$")
+    cifra("RIESGO_COSTO_CUPONES_SOLOS", "Parte del costo que va a cupones de clientes que habrían vuelto solos", round(contacto["canjes_sin_efecto"] * contacto["ticket_promedio"] * cn["descuento_cupon_pct"]), "$")
+    cifra("RIESGO_VUELVEN_SOLOS", f"% de clientes con {cn['dias_sin_compra_desde']} a {cn['dias_sin_compra_hasta']} días sin comprar que vuelve sin contacto en {cn.get('vigencia_cupon_dias', 30)} días (cierres de 2025)", round(100 * contacto["vuelven_solos_pct"], 1), "%")
+    cifra("RIESGO_VUELVEN_SOLOS_N", "Casos cliente-cierre usados para medir los que vuelven solos", contacto["casos_referencia_solos"], "casos")
+    cifra("RIESGO_MARGEN", "Margen recuperado esperado (solo clientes que vuelven por el cupón)", round(contacto["margen_recuperado"]), "$ dic-2025")
     cifra("RIESGO_NETO", "Beneficio neto esperado del contacto", round(contacto["beneficio_neto"]), "$ dic-2025")
-    cifra("RIESGO_TASA_EQUILIBRIO", "Tasa de respuesta mínima para no perder plata", round(100 * contacto["tasa_equilibrio"], 1), "%")
+    cifra("RIESGO_TASA_EQUILIBRIO", "Respuesta adicional mínima al cupón para no perder plata", round(100 * contacto["tasa_equilibrio"], 1), "%")
     cifra("RBA_90_MESDIA", f"RBA W={W} si las fechas ambiguas fueran mes-día", rp_md["RBA_pct"], "%")
     cifra("REPOSICION_90_MESDIA", f"Índice de reposición W={W} si las fechas fueran mes-día", rp_md["indice_reposicion"], "nuevos por perdido")
     cifra("NNV_90_MESDIA", f"NNV_{W} si las fechas fueran mes-día", nnv_md["pct_no_vuelve"], "%")
