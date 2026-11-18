@@ -15,6 +15,14 @@ import streamlit as st
 
 RAIZ = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(RAIZ))
+# Si el código de la cadena cambió (por ejemplo, después de un git push en Streamlit Cloud), se vuelve a importar.
+# Streamlit re-ejecuta este archivo, pero los módulos ya importados quedan en memoria con su versión vieja.
+_FIRMA = tuple(sorted((str(p), p.stat().st_mtime_ns) for p in [*(RAIZ / "cadena").rglob("*.py"), RAIZ / "run.py"]))
+if "cadena" in sys.modules and getattr(sys.modules["cadena"], "_firma_tablero", None) != _FIRMA:
+    for _nombre in [n for n in list(sys.modules) if n in ("cadena", "run") or n.startswith("cadena.")]:
+        del sys.modules[_nombre]
+import cadena  # noqa: E402
+cadena._firma_tablero = _FIRMA
 from cadena import almacen, metricas  # noqa: E402
 from cadena.config import cargar_parametros, ruta  # noqa: E402
 
@@ -71,7 +79,7 @@ def asegurar_datos():
 
 
 @st.cache_resource(show_spinner=False)
-def cargar(huella):
+def cargar(huella, firma_codigo):
     con = almacen.conectar(P, solo_lectura=True)
     m = metricas.cargar(con, P)
     op = {t: con.execute(f"SELECT * FROM operacion.{t}").df() for t in ["ultima_corrida", "pruebas", "cifras", "recepcion", "corridas"]}
@@ -82,7 +90,7 @@ def cargar(huella):
 
 asegurar_datos()
 huella = ruta(P["rutas"]["almacen"]).stat().st_mtime   # si la cadena vuelve a correr, el tablero recarga solo
-m, op, RETS = cargar(huella)
+m, op, RETS = cargar(huella, _FIRMA)   # código nuevo = objetos nuevos (no se reusan los de la versión vieja)
 ultima = op["ultima_corrida"].iloc[0]
 cifras = op["cifras"].set_index("etiqueta")["valor"]
 pruebas_ult = op["pruebas"][op["pruebas"]["corrida"] == ultima["corrida"]]
